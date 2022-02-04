@@ -295,7 +295,8 @@ namespace SampleUI_SamsungAGV
                 this.gridViewDS.Columns[0].Width = 150;
                 this.gridViewDS.Columns[1].Width = 60;
                 this.gridViewDS.Columns[2].Width = 60;
-                gridViewDS.DataSource = showData;
+                //gridViewDS.DataSource = showData;
+                gridViewDS.Invoke((MethodInvoker)delegate { gridViewDS.DataSource = showData; });
 
             }
 
@@ -684,7 +685,8 @@ namespace SampleUI_SamsungAGV
                     Console.WriteLine("\ndataRFID : {0} dataRute : {1} LastPost : {2}  \ndataMovement : {3} \nagvicon.X : {4} \nagvicon.Y : {5} \nstatusDelivery : {6} offTime : {7}"
                                         , dataRfid, dataRute, arrayPosition[indexRFID], dataMovement, agvIcon.Left, agvIcon.Top, statusDelivery, offTime);
                 }
-                gridViewStatus.DataSource = showData;
+                gridViewStatus.Invoke((MethodInvoker)delegate { gridViewStatus.DataSource = showData; });
+                
             }
             else
             {
@@ -692,7 +694,7 @@ namespace SampleUI_SamsungAGV
                 List<AGVStatusModel> showData = new List<AGVStatusModel>();
                 AGVStatusModel temp = new AGVStatusModel(agvName, agvState, agvStatus.ToString());
                 showData.Add(temp);
-                gridViewStatus.DataSource = showData;
+                gridViewStatus.Invoke((MethodInvoker)delegate { gridViewStatus.DataSource = showData; });
             }
 
             //==================================================================================================================================// --> API3
@@ -742,7 +744,7 @@ namespace SampleUI_SamsungAGV
                             else { errorCode = "-"; }
                             AGVErrorModel temp = new AGVErrorModel(DateTime.Now.ToString(), agvName, errorCode, obsCode);
                             showError.Add(temp);
-                            gridViewError.DataSource = showError;
+                            gridViewError.Invoke((MethodInvoker)delegate { gridViewError.DataSource = showError; });
                         }
                     }
                     else
@@ -750,7 +752,7 @@ namespace SampleUI_SamsungAGV
                         List<AGVErrorModel> showError = new List<AGVErrorModel>();
                         AGVErrorModel temp = new AGVErrorModel("", agvName, "", obsCode);
                         showError.Add(temp);
-                        gridViewError.DataSource = showError;
+                        gridViewError.Invoke((MethodInvoker)delegate { gridViewError.DataSource = showError; });
                     }
                     //==================================================================================================================================// --> API5
                     datanonArray = await APInonArray("devC.deviceDic[1].optionsLoader.load(carLib.RAM.DEV.OBS)");
@@ -796,9 +798,9 @@ namespace SampleUI_SamsungAGV
         {
             //this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             InitializeComponent();
-            gridViewStatus.DataSource = AGVStatus;
-            gridViewDS.DataSource = AGVData;
-            gridViewError.DataSource = AGVError;
+            gridViewStatus.Invoke((MethodInvoker)delegate { gridViewStatus.DataSource = AGVStatus; });
+            gridViewDS.Invoke((MethodInvoker)delegate { gridViewDS.DataSource = AGVData; });
+            gridViewError.Invoke((MethodInvoker)delegate { gridViewError.DataSource = AGVError; });
             AutoClosingMessageBox.Show("Connecting to The server...","SYSTEM INFO", 10000);
             callAPI();
             
