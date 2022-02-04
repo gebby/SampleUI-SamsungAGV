@@ -33,8 +33,9 @@ namespace SampleUI_SamsungAGV
         public int testButton = 0, agvAddress = 1, agv2Address =2, waitingTime = 0, moveCnt = 0;
         public string agvState, agvName = "AGV-1",agvTime, agvStatus, agvRoute, agvRfid, statusDelivery, obsCode;
         public string agv2State, agv2Name = "AGV-2", agv2Time, agv2Status, agv2Route, agv2Rfid, statusDelivery2, obsCode2;
+        public string readType;
         public long jobId;
-        public double offTime;
+        public double offTime,offTime2;
 
         //public string url = "http://localhost:8000/req";
         public string url = "http://172.16.101.203:8000/req";
@@ -80,6 +81,18 @@ namespace SampleUI_SamsungAGV
                 this.Status=status;
             }
         }
+        public class AGV2DeviceModel
+        {
+            public string ID { get; set; }
+            public string Name { get; set; }
+            public string Status { get; set; }
+            public AGV2DeviceModel(string agvId, string agvName, string status)
+            {
+                this.ID = agvId;
+                this.Name = agvName;
+                this.Status = status;
+            }
+        }
         public class AGVStatusModel
         {
             //public string ID { get; set; }
@@ -122,6 +135,50 @@ namespace SampleUI_SamsungAGV
                 this.Obstacle = obscode;
             }
         }
+
+        public class AGV2StatusModel
+        {
+            //public string ID { get; set; }
+            public string Name { get; set; }
+            public string State { get; set; }
+            public string Status { get; set; }
+            public AGV2StatusModel(string agvName, string power, string status)
+            {
+                //this.ID = agvId;
+                this.Name = agvName;
+                this.State = power;
+                this.Status = status;
+            }
+        }
+        public class AGV2CallingModel
+        {
+            public string Time { get; set; }
+            public string Name { get; set; }
+            public string Station { get; set; }
+            public string Status { get; set; }
+            public AGV2CallingModel(string time, string agvname, string deliv, string status)
+            {
+                this.Time = time;
+                this.Name = agvname;
+                this.Station = deliv;
+                this.Status = status;
+            }
+        }
+        public class AGV2ErrorModel
+        {
+            public string Time { get; set; }
+            public string Name { get; set; }
+            public string Error { get; set; }
+            public string Obstacle { get; set; }
+            public AGV2ErrorModel(string dateTimeNow, string agvName, string errorCode, string obscode)
+            {
+                this.Time = dateTimeNow;
+                this.Name = agvName;
+                this.Error = errorCode;
+                this.Obstacle = obscode;
+            }
+        }
+
         private async void callAPI()
         {
             //Console.WriteLine("\t Start Call API");
@@ -140,8 +197,7 @@ namespace SampleUI_SamsungAGV
                                               rfid22.Location.Y,rfid23.Location.Y,rfid24.Location.Y,rfid10.Location.Y,rfid11.Location.Y,rfid31.Location.Y,rfid32.Location.Y,rfid33.Location.Y,
                                               rfid34.Location.Y,rfid15.Location.Y,rfid16.Location.Y,rfid37.Location.Y,rfid38.Location.Y,rfid39.Location.Y,rfid40.Location.Y,rfid41.Location.Y,
                                               rfid42.Location.Y,rfid8.Location.Y};
-
-            //==================================================================================================================================// --> PHASE 2
+            //==================================================================== PHASE 2 ==============================================================// --> 
             string[] arrayRFID_P2 = new string[] { "9","0", "1", "2", "4", "5", "19", "20", "21","22", "23", "24", "10", "11","103","102","101", "31", "32", "33", "34",
                                                    "15", "16","37", "38","39", "40","41", "42","43","44",                                                      //Line 1-6
                                                    "12","13","104","105","106","29","30","45","46","47","48","49","50","51","52","53","54","55","56" ,"8"};    //Line 7-12
@@ -157,10 +213,8 @@ namespace SampleUI_SamsungAGV
                                               rfid42.Location.Y,rfid43.Location.Y,rfid44.Location.Y,rfid12.Location.Y,rfid13.Location.Y,rfid104.Location.Y,rfid105.Location.Y,rfid106.Location.Y,
                                               rfid29.Location.Y,rfid30.Location.Y,rfid45.Location.Y,rfid46.Location.Y,rfid47.Location.Y,rfid48.Location.Y,rfid49.Location.Y,rfid50.Location.Y,
                                               rfid51.Location.Y,rfid52.Location.Y,rfid53.Location.Y,rfid54.Location.Y,rfid55.Location.Y,rfid56.Location.Y,rfid8.Location.Y};
-            //==================================================================================================================================// --> PHASE 2
+            //==================================================================== PHASE 2 ==============================================================// --> 
 
-
-            //Console.Write("Position : {0} X : {1} Y : {2}", arrayRFID, arrayRfidLoc_X, arrayRfidLoc_Y)
             //==================================================================================================================================// --> API1
             ResponseData data = await API("missionC.missionGetActiveList()");
             if (data.errMark == "OK")
@@ -179,29 +233,12 @@ namespace SampleUI_SamsungAGV
                     //string[] lines = System.IO.File.ReadAllLines(@"D:\WORK\SAMSUNG\SampleUI-SamsungAGV\log.txt");
                     if (counterLog < 11)
                     {
-                        if (statusDelivery == "执行")
-                        {
-                            statusDelivery = "RUNNING";
-                        }
-                        else if (statusDelivery == "放弃")
-                        {
-                            statusDelivery = "HOLD";
-                        }
-                        else if (statusDelivery == "正常结束")
-                        {
-                            statusDelivery = "FINISH";
-                        }
-                        else if (statusDelivery == "错误")
-                        {
-                            string disc = agvName + " DISCONNECTED";
-                            labelDisconnect.Text = disc;
-                            labelDisconnect.Visible = true;
-                        }
-                        else
-                        {
-                           Console.WriteLine("Status Delivery : {0}", statusDelivery);
-                            labelDisconnect.Visible = false;
-                        }
+                        if (statusDelivery == "执行") { statusDelivery = "RUNNING";}
+                        else if (statusDelivery == "放弃") { statusDelivery = "HOLD";}
+                        else if (statusDelivery == "正常结束") { statusDelivery = "FINISH";}
+                        else if (statusDelivery == "错误") { string disc = agvName + " DISCONNECTED"; labelDisconnect.Text = disc; labelDisconnect.Visible = true;}
+                        else { Console.WriteLine("Status Delivery : {0}", statusDelivery); labelDisconnect.Visible = false;}
+
                         //Console.WriteLine("{0} {1} {2} {3} {4} cnt : {5} {6} lastTime : {7}", agvTime, agvName, jobId, statusDelivery, data.msg.Count,
                         //counterLog, writeFlag, lastTIme);
                         //System.Console.WriteLine("Contents of WriteText.txt = \n{0}", text);
@@ -215,7 +252,9 @@ namespace SampleUI_SamsungAGV
                         //// Display the file contents by using a foreach loop.
                         //System.Console.WriteLine("Contents of WriteLines2.txt = \n
                     }
-                    else { }
+                    else { //Console.WriteLine("API 1 Else ");
+                    }
+
                     if (statusDelivery == "执行")
                     {
                         statusDelivery = "RUNNING";
@@ -229,35 +268,13 @@ namespace SampleUI_SamsungAGV
                         int index = Array.IndexOf(arrayMachine, searchString);
                         AGVCallingModel temp = new AGVCallingModel(agvTime, agvName, data.msg[i][1].ToString(), statusDelivery);
                         showData.Add(temp);
-                        //Console.WriteLine("The first occurrence of \"{0}\" is at index {1}. statusDelivery : {2}", searchString, index, statusDelivery);
-                        if (index == 0)
-                        {
-                            activeLine(true, false, false, false, false, false);
-                        }
-                        else if (index == 1)
-                        {
-                            activeLine(false, true, false, false, false, false);
-                        }
-                        else if (index == 2)
-                        {
-                            activeLine(false, false, true, false, false, false);
-                        }
-                        else if (index == 3)
-                        {
-                            activeLine(false, false, false, true, false, false);
-                        }
-                        else if (index == 4)
-                        {
-                            activeLine(false, false, false, false, true, false);
-                        }
-                        else if (index == 5)
-                        {
-                            activeLine(false, false, false, false, false, true);
-                        }
-                        else
-                        {
-                            activeLine(false, false, false, false, false, false);
-                        }
+                        if (index == 0) { activeLine(true, false, false, false, false, false);}
+                        else if (index == 1){ activeLine(false, true, false, false, false, false);}
+                        else if (index == 2){ activeLine(false, false, true, false, false, false);}
+                        else if (index == 3){ activeLine(false, false, false, true, false, false);}
+                        else if (index == 4){ activeLine(false, false, false, false, true, false);}
+                        else if (index == 5){ activeLine(false, false, false, false, false, true);}
+                        else { activeLine(false, false, false, false, false, false);}
                     }
                     else if (statusDelivery == "放弃")
                     {
@@ -277,25 +294,11 @@ namespace SampleUI_SamsungAGV
                         AGVCallingModel temp = new AGVCallingModel(agvTime, agvName, data.msg[i][1].ToString(), statusDelivery);
                         showData.Add(temp);
                     }
-                    else
-                    {
-                        activeLine(false, false, false, false, false, false);
-                    }
+                    else { activeLine(false, false, false, false, false, false);}
                 }
-                //if (writeFlag == false && lastTIme != agvTime)
-                //{
-                //    for (counterLog = 0; counterLog < data.msg.Count; counterLog++)
-                //    {
-                //        writeLog(agvTime, agvName, jobId, statusDelivery);
-
-                //    }
-                //    writeFlag = true;
-                //}
-                //else { }
                 this.gridViewDS.Columns[0].Width = 150;
                 this.gridViewDS.Columns[1].Width = 60;
                 this.gridViewDS.Columns[2].Width = 60;
-                //gridViewDS.DataSource = showData;
                 gridViewDS.Invoke((MethodInvoker)delegate { gridViewDS.DataSource = showData; });
 
             }
@@ -304,30 +307,33 @@ namespace SampleUI_SamsungAGV
             data = await API("devC.getCarList()");
             if (data.errMark == "OK")
             {
-                //Console.WriteLine("devC.getCarList()");
                 List<AGVStatusModel> showData = new List<AGVStatusModel>();
+                //List<AGV2StatusModel> showData2 = new List<AGV2StatusModel>();
                 for (int i = 0; i < data.msg.Count; i++)
                 {
-                    double power = data.msg[i][7];
-                    batteryLevel1.Value = (int)power;
-                    batValue1.Text = power.ToString();
+                    double power1 = data.msg[0][7], power2 = data.msg[1][7];
+                    batteryLevel1.Value = (int)power1; batValue1.Text = power1.ToString();
+                    batteryLevel2.Value = (int)power2; batValue2.Text = power2.ToString();
 
                     //"车" Read RFID and detail Car activity
-                    double dataMovement = data.msg[i][15], dataRute = data.msg[i][31], dataRfid = data.msg[i][33], readAddress = data.msg[i][0];
-                    string readType = data.msg[i][2];
+                    double dataMovement = data.msg[0][15], dataMovement2 = data.msg[1][15],  dataRute = data.msg[i][31], dataRfid = data.msg[i][33], readAddress = data.msg[0][3], readAddress2 = data.msg[1][3]; ;
+                    readType = data.msg[i][2];
                     string searchRFID = dataRfid.ToString();
                     //Console.Write(searchRFID);
                     int indexRFID = Array.IndexOf(arrayRFID, searchRFID);
 
                     agvStatus = dataMovement.ToString();
+                    agv2Status = dataMovement2.ToString();
                     agvRoute = dataRute.ToString();
                     agvRfid = dataRfid.ToString();
+                    //Console.WriteLine("API 2 -- agvaddress 1: {0},  2: {1} \nBat-1: {2} Bat-2: {3}",
+                    //                    readAddress, readAddress2, power,power2);
 
-                    if ((readAddress == 1 || readAddress == 2) && readType == "车")
+                    if ((readAddress == 1 || readAddress2 ==2) && readType == "车")
                     {
-                        if (dataMovement == 0) { agvStatus = "STOP";}
-                        else if (dataMovement == 1) { agvStatus = "PAUSE"; }
-                        else if (dataMovement == 2) { agvStatus = "RUN"; }
+                        if (dataMovement == 0 || dataMovement2 == 0 ) { agvStatus = "   STOP"; agv2Status = "STOP"; }
+                        else if (dataMovement == 1 || dataMovement2 == 1) { agvStatus = "  PAUSE"; agv2Status = "PAUSE"; }
+                        else if (dataMovement == 2 || dataMovement2 == 1) { agvStatus = "  RUN"; agv2Status = "RUN"; }
                         else { }
 
                         if (dataRute == 1 || dataRute == 2 || dataRute == 3 || dataRute == 4 || dataRute == 5)
@@ -364,10 +370,7 @@ namespace SampleUI_SamsungAGV
                                 agvIcon.Visible = false; agvFlip1.Visible = false; agvFlip2.Visible = false;
                                 Console.WriteLine("cok");
                             }
-                            else if (dataRfid == 9)
-                            {
-                                agvIcon.Visible = false;
-                            }
+                            else if (dataRfid == 9) { agvIcon.Visible = false;}
                             wipFull1.Visible = false;
                             wipFull2.Visible = false;
                         }
@@ -383,11 +386,8 @@ namespace SampleUI_SamsungAGV
                         // Visualization
                         if (dataRfid == 1 && dataRute != 20)
                         {
-                            agvFlip1.Visible = true;
-                            agvFlip2.Visible = false;
-                            agvIcon.Visible = false;
-                            agvFlip1.Left = arrayRfidLoc_X[indexRFID];
-                            agvFlip1.Top = arrayRfidLoc_Y[indexRFID];
+                            agvFlip1.Visible = true; agvFlip2.Visible = false; agvIcon.Visible = false;
+                            agvFlip1.Left = arrayRfidLoc_X[indexRFID]; agvFlip1.Top = arrayRfidLoc_Y[indexRFID];
                         }
                         else if (dataRfid == 11 && dataRute != 20)
                         {
@@ -395,29 +395,22 @@ namespace SampleUI_SamsungAGV
                         }
                         else if (dataRfid == 31 && dataRute != 20)
                         {
-                            agvFlip1.Visible = false;
-                            agvFlip2.Visible = true;
-                            agvIcon.Visible = false;
-                            agvFlip2.Left = arrayRfidLoc_X[indexRFID];
-                            agvFlip2.Top = arrayRfidLoc_Y[indexRFID];
+                            agvFlip1.Visible = false; agvFlip2.Visible = true; agvIcon.Visible = false;
+                            agvFlip2.Left = arrayRfidLoc_X[indexRFID]; agvFlip2.Top = arrayRfidLoc_Y[indexRFID];
                         }
                         else if (dataRfid == 32 && dataRute != 20)
                         {
-                            agvFlip2.Visible = false;
-                            agvIcon.Visible = true;
-                            agvIcon.Left = arrayRfidLoc_X[indexRFID];
-                            agvIcon.Top = arrayRfidLoc_Y[indexRFID];
+                            agvFlip2.Visible = false; agvIcon.Visible = true;
+                            agvIcon.Left = arrayRfidLoc_X[indexRFID]; agvIcon.Top = arrayRfidLoc_Y[indexRFID];
                         }
                         else if (dataRfid == 32) 
                         {
                             agvIcon.Visible = true;
-                            agvIcon.Left = arrayRfidLoc_X[indexRFID];
-                            agvIcon.Top = arrayRfidLoc_Y[indexRFID];
+                            agvIcon.Left = arrayRfidLoc_X[indexRFID]; agvIcon.Top = arrayRfidLoc_Y[indexRFID];
                         }
                         else if (dataRfid == 31 && dataRute == 20)
                         {
                             moveAnimation.Start();
-                            Console.WriteLine("`");
                             agvIcon.Visible = false;
                             agvFlip2.Visible = false;
                             agvFlip3.Visible = false;
@@ -429,7 +422,6 @@ namespace SampleUI_SamsungAGV
                             if (agvFlip4.Location.X > rfidVirtual2.Left || dataRfid == 11)
                             {
                                 moveAnimation.Stop();
-                                Console.WriteLine("wess");
                                 agvFlip4.Visible = false;
                                 agvFlip3.Visible = true;
                                 agvFlip3.Left = rfidVirtual2.Location.X;
@@ -485,7 +477,7 @@ namespace SampleUI_SamsungAGV
                         }
                         else if (dataRfid ==0)
                         {
-                            Console.WriteLine("RFID = 0");
+                            //Console.WriteLine("RFID = 0");
                             agvIcon.Visible = false;
                             agvHome1.Visible = false;
                             //agvLabel1.Visible = false;
@@ -497,196 +489,19 @@ namespace SampleUI_SamsungAGV
                             agvIcon.Left = arrayRfidLoc_X[indexRFID];
                             agvIcon.Top = arrayRfidLoc_Y[indexRFID];
                         }
-                        AGVStatusModel temp = new AGVStatusModel(agvName, agvState, agvStatus.ToString());
-                        AGVStatusModel temp2 = new AGVStatusModel(agv2Name, agvState, agvStatus.ToString());
+                        disini("", "", "492");
+                        AGVStatusModel temp = new AGVStatusModel("  "+agvName, agvState, agvStatus.ToString());
+                        AGVStatusModel temp2 = new AGVStatusModel(agv2Name, agv2State, agv2Status.ToString());
                         showData.Add(temp);
                         showData.Add(temp2);
                     }
-
-                    // AGV-2
-                    //if (readAddress == agv2Address && readType == "车")
-                    //{
-                    //    if (dataMovement == 0) { agvStatus = "STOP"; }
-                    //    else if (dataMovement == 1) { agvStatus = "PAUSE"; }
-                    //    else if (dataMovement == 2) { agvStatus = "RUN"; }
-                    //    else { }
-
-                    //    if (dataRute == 1 || dataRute == 2 || dataRute == 3 || dataRute == 4 || dataRute == 5)
-                    //    {
-                    //        agv2Route = "GO TO LINE";
-                    //        if (dataRfid == 11) { labelPosition.Text = agv2Route; }
-                    //        else { labelPosition.Text = arrayPosition[indexRFID]; }
-                    //    }
-                    //    // Button Route 1
-                    //    else if ((dataRute == 1 || dataRute == 2 || dataRute == 3 || dataRute == 4 || dataRute == 5) && dataRfid == 1)
-                    //    {
-                    //        wip1.Visible = false; wip2.Visible = false; wip3.Visible = false; wip4.Visible = false; wip5.Visible = false; wip6.Visible = false;
-                    //    }
-                    //    // Button Route 2
-                    //    else if (dataRute == 20 && (dataRfid == 32 || dataRfid == 31 || dataRfid == 1 || dataRfid == 2))
-                    //    {
-                    //        agv2Route = "GO TO WIP";
-                    //        labelPosition.Text = agvRoute;
-                    //    }
-                    //    // Transfer WIP FUll 1
-                    //    else if (dataRute == 20 && dataRfid == 10)
-                    //    {
-                    //        wipFull1.Visible = true;
-                    //    }
-                    //    else if (dataRute == 20 || dataRute == 30)
-                    //    {
-                    //        //agvRoute = "GO HOME";
-                    //        if ((dataRfid == 5 || labelPosition.Text == "HOME") && statusDelivery == "FINISH")
-                    //        {
-                    //            activeLine(false, false, false, false, false, false);
-                    //            labelPosition.Text = arrayPosition[indexRFID];
-                    //            agvHome1.Visible = true;
-                    //            //agvLabel1.Visible = true;
-                    //            agvIcon.Visible = false; agvFlip1.Visible = false; agvFlip2.Visible = false;
-                    //            Console.WriteLine("cok");
-                    //        }
-                    //        else if (dataRfid == 9)
-                    //        {
-                    //            agvIcon.Visible = false;
-                    //        }
-                    //        wipFull1.Visible = false;
-                    //        wipFull2.Visible = false;
-                    //    }
-                    //    else
-                    //    {
-                    //        agv2Route = "STANDBY";
-                    //        labelPosition.Text = arrayPosition[indexRFID];
-                    //        agvHome1.Visible = true;
-                    //        //agvLabel1.Visible = false;
-                    //        agvIcon.Visible = false;
-                    //    }
-
-                    //    // Visualization
-                    //    if (dataRfid == 1 && dataRute != 20)
-                    //    {
-                    //        agvFlip1.Visible = true;
-                    //        agvFlip2.Visible = false;
-                    //        agvIcon.Visible = false;
-                    //        agvFlip1.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvFlip1.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    else if (dataRfid == 11 && dataRute != 20)
-                    //    {
-                    //        agvIcon.Visible = false;
-                    //    }
-                    //    else if (dataRfid == 31 && dataRute != 20)
-                    //    {
-                    //        agvFlip1.Visible = false;
-                    //        agvFlip2.Visible = true;
-                    //        agvIcon.Visible = false;
-                    //        agvFlip2.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvFlip2.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    else if (dataRfid == 32 && dataRute != 20)
-                    //    {
-                    //        agvFlip2.Visible = false;
-                    //        agvIcon.Visible = true;
-                    //        agvIcon.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvIcon.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    else if (dataRfid == 32)
-                    //    {
-                    //        agvIcon.Visible = true;
-                    //        agvIcon.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvIcon.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    else if (dataRfid == 31 && dataRute == 20)
-                    //    {
-                    //        moveAnimation.Start();
-                    //        Console.WriteLine("`");
-                    //        agvIcon.Visible = false;
-                    //        agvFlip2.Visible = false;
-                    //        agvFlip3.Visible = false;
-                    //        agvFlip4.Visible = true;
-                    //        int position = rfidVirtual1.Location.X + moveCnt;
-                    //        agvFlip4.Left = position;
-                    //        agvFlip4.Top = rfidVirtual1.Location.Y;
-                    //        Console.WriteLine("moveCnt : {0}, agvPost : {1} X : {2} ", moveCnt, position, rfidVirtual2.Location.X);
-                    //        if (agvFlip4.Location.X > rfidVirtual2.Left || dataRfid == 11)
-                    //        {
-                    //            moveAnimation.Stop();
-                    //            Console.WriteLine("wess");
-                    //            agvFlip4.Visible = false;
-                    //            agvFlip3.Visible = true;
-                    //            agvFlip3.Left = rfidVirtual2.Location.X;
-                    //            agvFlip3.Top = rfidVirtual2.Location.Y;
-                    //        }
-                    //        else { agvFlip4.Visible = true; agvFlip3.Visible = false; }
-                    //    }
-                    //    else if (dataRfid == 11 && dataRute == 20)
-                    //    {
-                    //        agvFlip4.Visible = false;
-                    //        agvFlip2.Visible = false;
-                    //        agvFlip3.Visible = true;
-                    //        agvIcon.Visible = false;
-                    //        agvFlip3.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvFlip3.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    else if (dataRfid == 1 && dataRute == 20)
-                    //    {
-                    //        agvFlip1.Visible = true;
-                    //        agvFlip2.Visible = false;
-                    //        agvFlip3.Visible = false;
-                    //        agvIcon.Visible = false;
-                    //        agvFlip1.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvFlip1.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    else if (dataRfid == 2 && dataRute == 20)
-                    //    {
-                    //        agvFlip1.Visible = false;
-                    //        agvFlip2.Visible = false;
-                    //        agvFlip3.Visible = false;
-                    //        agvFlip4.Visible = false;
-                    //        agvIcon.Visible = true;
-                    //        agvIcon.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvIcon.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    else if (dataRfid == 5)
-                    //    {
-                    //        agvHome1.Visible = true;
-                    //        //agvLabel1.Visible = true;
-                    //    }
-                    //    else if (dataRute == 1)
-                    //    {
-                    //        Console.WriteLine("Bypass Rute 1");
-                    //        labelPosition.Text = arrayPosition[indexRFID];
-                    //        agvIcon.Visible = true;
-                    //        agvFlip3.Visible = false;
-                    //        agvFlip4.Visible = false;
-                    //        agvHome1.Visible = false;
-                    //        //agvLabel1.Visible = false;
-                    //        agvIcon.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvIcon.Top = arrayRfidLoc_Y[indexRFID];
-
-                    //    }
-                    //    else if (dataRfid == 0)
-                    //    {
-                    //        Console.WriteLine("RFID = 0");
-                    //        agvIcon.Visible = false;
-                    //        agvHome1.Visible = false;
-                    //        //agvLabel1.Visible = false;
-                    //    }
-                    //    else
-                    //    {
-                    //        labelPosition.Text = arrayPosition[indexRFID];
-                    //        agvIcon.Visible = true;
-                    //        agvIcon.Left = arrayRfidLoc_X[indexRFID];
-                    //        agvIcon.Top = arrayRfidLoc_Y[indexRFID];
-                    //    }
-                    //    AGVStatusModel temp = new AGVStatusModel(agvName, agvState, agvStatus.ToString());
-                    //    showData.Add(temp);
-                    //}
                     // PRINT ALL
-                    Console.WriteLine("\ndataRFID : {0} dataRute : {1} LastPost : {2}  \ndataMovement : {3} \nagvicon.X : {4} \nagvicon.Y : {5} \nstatusDelivery : {6} offTime : {7}"
-                                        , dataRfid, dataRute, arrayPosition[indexRFID], dataMovement, agvIcon.Left, agvIcon.Top, statusDelivery, offTime);
+                    //Console.WriteLine("\ndataRFID : {0} dataRute : {1} LastPost : {2}  \ndataMovement : {3} \nagvicon.X : {4} \nagvicon.Y : {5} \nstatusDelivery : {6} offTime : {7}"
+                    //                    , dataRfid, dataRute, arrayPosition[indexRFID], dataMovement, agvIcon.Left, agvIcon.Top, statusDelivery, offTime);
                 }
+                //disini("669", "showdata", "");
                 gridViewStatus.Invoke((MethodInvoker)delegate { gridViewStatus.DataSource = showData; });
-                
+
             }
             else
             {
@@ -701,37 +516,48 @@ namespace SampleUI_SamsungAGV
             data = await API("devC.getDeviceList()");
             if (data.errMark == "OK")
             {
-                //Console.WriteLine("devC.getDeviceList()");
+                double agvAddress,agvAddress2;
+                string on1 = "   ON-1", on2 = "ON-2", off1 = "OFF-1", off2 = "OFF-2";
                 List<AGVDeviceModel> showDevice = new List<AGVDeviceModel>();
+                List<AGV2DeviceModel> showDevice2 = new List<AGV2DeviceModel>();
                 for (int i = 0; i < data.msg.Count; i++)
                 {
-                    double agvAddress = data.msg[0][3];
-                    Console.WriteLine("agvaddress : {0}", agvAddress);
+                    agvAddress = data.msg[0][3]; agvAddress2 = data.msg[1][3];
                     offTime = data.msg[0][6];
-                    if ((agvAddress == 1 || agvAddress == 2) && offTime >= 3)
+                    if ((agvAddress == 1) && readType == "车" && offTime >= 3)
                     {
-                        agvState = "OFF";
+                        agvState = off1;
                         string disc = agvName + " DISCONNECTED";
                         Console.WriteLine(disc);
                         labelDisconnect.Text = disc;
                         labelDisconnect.Visible = true;
                     }
-                    else if (agvAddress == 1 && offTime < 0.3)
+                    else if (agvAddress == 1 && readType == "车" && offTime < 0.3)
                     {
-                        agvState = "ON";
+                        agvState = on1;
                         labelDisconnect.Visible = false;
                     }
-                    else if (agvAddress == 2 && offTime < 0.3)
+                    if ((agvAddress2 == 2) && readType == "车" && offTime >= 3)
                     {
-                        agvState = "ON";
+                        agv2State = off2;
+                        string disc = agv2Name + " DISCONNECTED";
+                        Console.WriteLine(disc);
+                        labelDisconnect.Text = disc;
+                        labelDisconnect.Visible = true;
+                    }
+                    else if (agvAddress2 == 2 && readType == "车" && offTime < 0.3)
+                    {
+                        agv2State = on2;
                         labelDisconnect.Visible = false;
                     }
-                    else {}
+                    else { //Console.WriteLine("API 3 Else"); 
+                    }
+                    
                 }
-                if (agvState == "ON")               // Update Obstacle & Emergency STOP
+                
+                if (agvState == "ON-1")               // Update Obstacle & Emergency STOP
                 {
-                    //Console.WriteLine("EMC & OBS Update");
-            //==================================================================================================================================// --> API4
+                    //==================================================================================================================================// --> API4
                     ResponseData2 datanonArray = await APInonArray("devC.deviceDic[1].optionsLoader.load(carLib.RAM.DEV.BTN_EMC)");
                     if (datanonArray.errMark == "OK")
                     {
@@ -767,12 +593,14 @@ namespace SampleUI_SamsungAGV
                                 obsCode = "OBS STOP";
                             }
                             else { obsCode = "-"; }
-                            //AGVErrorModel temp = new AGVErrorModel(DateTime.Now.ToString(), agvName, obsCode);
-                            //showError.Add(temp);
-                            //gridViewError.DataSource = showError;
                         }
                     }
+                    this.gridViewError.Columns[0].Width = 90;
                     updateError = 0;
+                }
+                else if (agv2State == "ON-2")
+                {
+                    Console.WriteLine("2");
                 }
 
             }
@@ -783,8 +611,6 @@ namespace SampleUI_SamsungAGV
                 labelDisconnect.Text = disc;
                 labelDisconnect.Visible = true;
             }
-            
-
             callAPI();
         }
         
@@ -803,8 +629,6 @@ namespace SampleUI_SamsungAGV
             gridViewError.Invoke((MethodInvoker)delegate { gridViewError.DataSource = AGVError; });
             AutoClosingMessageBox.Show("Connecting to The server...","SYSTEM INFO", 10000);
             callAPI();
-            
-            
         }
 
         //=============================================================Backend Service=============================================================//
@@ -915,7 +739,6 @@ namespace SampleUI_SamsungAGV
 
         public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
-            // Unix timestamp is seconds past epoch
             DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dateTime;
@@ -937,6 +760,19 @@ namespace SampleUI_SamsungAGV
         {
             Application.Exit();
         }
+        private void batteryLevel1_ProgressChanged(object sender, Bunifu.UI.WinForms.BunifuProgressBar.ProgressChangedEventArgs e)
+        {
 
+        }
+
+        private void batteryLevel2_ProgressChanged(object sender, Bunifu.UI.WinForms.BunifuProgressBar.ProgressChangedEventArgs e)
+        {
+
+        }
+
+        public static void disini(string textInput,string i2,string i3)
+        {
+            Console.WriteLine("Lagi Disini : {0}, {1}, {2}", textInput,i2,i3);
+        }
     }
 }
