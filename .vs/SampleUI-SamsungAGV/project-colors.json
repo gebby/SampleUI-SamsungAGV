@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "3b8bf78d-995b-4e30-86ae-5b115163efca": {
+      "ProjectGuid": "3b8bf78d-995b-4e30-86ae-5b115163efca",
+      "DisplayName": "SampleUI-SamsungAGV",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
